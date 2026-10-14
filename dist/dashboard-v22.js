@@ -811,7 +811,7 @@
       const currentWeatherReady = meta.current_temperature_c != null || meta.current_humidity_pct != null;
       const modelWeather = weatherOk
         ? `${formatDecimal(meta.model_weather_rainfall_mm, 1)} mm hujan · RH ${formatDecimal(meta.model_weather_humidity_pct, 1)}% · ${formatDecimal(meta.model_weather_temperature_c, 1)} °C`
-        : "fallback/cached";
+        : "Data cuaca model belum mutakhir";
       const currentWeatherGrid = currentWeatherReady ? `
         <div class="live-weather-title"><span>Cuaca terkini</span><small>rerata 16 titik kecamatan</small></div>
         <div class="live-weather-grid">
