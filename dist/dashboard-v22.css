@@ -1,0 +1,145 @@
+.segment-control.v22-three {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.segment-control.v22-three .segment-button {
+  padding-inline: 5px;
+  font-size: 0.78rem;
+}
+
+.period-grid {
+  display: grid;
+  grid-template-columns: 0.72fr 1.28fr;
+  gap: 9px;
+}
+
+.period-field {
+  min-width: 0;
+  transition: opacity 160ms ease;
+}
+
+.period-field.is-disabled {
+  opacity: 0.58;
+}
+
+.period-field .field-label {
+  margin-top: 13px;
+}
+
+.realtime-refresh-button {
+  width: 100%;
+  min-height: 42px;
+  margin-top: 13px;
+  border: 1px solid rgba(31, 213, 163, 0.3);
+  border-radius: 11px;
+  color: #ffffff;
+  background: #148873;
+  cursor: pointer;
+  font-size: 0.82rem;
+  font-weight: 800;
+  transition: background 160ms ease, opacity 160ms ease;
+}
+
+.realtime-refresh-button:hover {
+  background: #18a184;
+}
+
+.realtime-refresh-button:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.source-status {
+  margin-top: 13px;
+  padding: 11px;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 11px;
+  background: rgba(0, 0, 0, 0.15);
+}
+
+.source-status-head {
+  display: grid;
+  grid-template-columns: 9px minmax(0, 1fr);
+  align-items: start;
+  gap: 7px;
+  margin-bottom: 8px;
+}
+
+.source-status-head strong {
+  color: #eafffa;
+  font-size: 0.73rem;
+  line-height: 1.35;
+}
+
+.source-dot {
+  width: 8px;
+  height: 8px;
+  margin-top: 2px;
+  border-radius: 50%;
+}
+
+.source-dot.ok {
+  background: #25c99a;
+  box-shadow: 0 0 0 3px rgba(37, 201, 154, 0.12);
+}
+
+.source-dot.warn {
+  background: #f3a546;
+  box-shadow: 0 0 0 3px rgba(243, 165, 70, 0.12);
+}
+
+.source-row {
+  display: grid;
+  grid-template-columns: 62px minmax(0, 1fr);
+  gap: 7px;
+  padding: 4px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.055);
+  color: #8facaf;
+  font-size: 0.66rem;
+}
+
+.source-row strong {
+  color: #cfe0df;
+  font-weight: 650;
+  text-align: right;
+}
+
+.source-status > small {
+  display: block;
+  margin-top: 7px;
+  color: #6f9295;
+  font-size: 0.61rem;
+}
+
+.status-chip #liveStatusLabel {
+  width: auto;
+  height: auto;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.metric-card strong {
+  font-size: clamp(1.05rem, 1.6vw, 1.42rem);
+}
+
+.detail-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.detail-stat strong {
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 390px) {
+  .period-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .segment-control.v22-three .segment-button {
+    font-size: 0.72rem;
+  }
+}
+
+/* leptoscope formal font v7 */
+html,body,button,input,select,textarea,a,p,span,strong,small,label,h1,h2,h3,h4,h5,h6,li,div,canvas,.leaflet-container,.leaflet-control,.leaflet-popup-content{font-family:"Roboto","Segoe UI",Arial,sans-serif!important}

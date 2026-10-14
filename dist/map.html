@@ -1,0 +1,301 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="WebGIS LeptoScope Kota Semarang dengan seri waktu historis 2018–2023, simulasi, dan pemantauan bulanan eksperimental.">
+  <title>LeptoScope Semarang</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%2309232b'/%3E%3Cpath d='M32 10C24 22 16 31 16 41a16 16 0 0 0 32 0c0-10-8-19-16-31Z' fill='%2319b58b'/%3E%3Cpath d='M25 42V25h6v12h9v5H25Z' fill='white'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://unpkg.com">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="styles.css?v=1789676920">
+  <link rel="stylesheet" href="simulation-v20.css?v=22">
+  <link rel="stylesheet" href="dashboard-v22.css?v=22">
+  <link rel="stylesheet" href="elegant-map.css?v=7.1">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <a class="brand-block brand-link" href="index.html" aria-label="Kembali ke beranda">
+        <img class="map-brand-logo" src="assets/leptoscope-logo.svg" alt="LeptoScope">
+        <span class="brand-context">Ruang Analisis</span>
+      </a>
+      <div class="topbar-actions">
+        <a class="home-link" href="index.html">← Beranda</a>
+        <span class="location-chip">Kota Semarang</span>
+        <span class="status-chip"><span aria-hidden="true"></span><span id="liveStatusLabel">Historis</span></span>
+        <button id="mobilePanelButton" class="icon-button mobile-only" type="button" aria-label="Buka panel analisis" aria-expanded="false">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"></path></svg>
+        </button>
+      </div>
+    </header>
+
+    <main class="workspace">
+      <aside id="analysisPanel" class="analysis-panel" aria-label="Panel analisis">
+        <section class="panel-intro">
+          <p class="eyebrow">Cakupan analisis</p>
+          <h2>Analisis temporal, prioritas wilayah, dan pemantauan</h2>
+          <p>Gunakan evaluasi historis 2018–2023 untuk membaca pola kasus dan kinerja peringatan, lalu bandingkan prioritas antarkecamatan. Mode pemantauan eksperimental menggunakan bulan kalender terakhir yang sudah lengkap sebagai dasar peringatan bulan berjalan.</p>
+        </section>
+
+        <section class="control-card" aria-labelledby="viewControlTitle">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Tampilan</p>
+              <h3 id="viewControlTitle">Pilih periode</h3>
+            </div>
+          </div>
+          <div class="segment-control v22-three" role="group" aria-label="Jenis tampilan peta">
+            <button class="segment-button" type="button" data-mode="realtime" aria-pressed="false">Terkini</button>
+            <button class="segment-button active" type="button" data-mode="annual" aria-pressed="true">Tahunan</button>
+            <button class="segment-button" type="button" data-mode="monthly" aria-pressed="false">Bulanan</button>
+          </div>
+
+          <div class="period-grid">
+            <div id="yearField" class="period-field">
+              <label class="field-label" for="yearSelect">Tahun historis</label>
+              <select id="yearSelect"></select>
+            </div>
+            <div id="monthField" class="period-field is-disabled">
+              <label class="field-label" for="monthSelect">Bulan historis</label>
+              <select id="monthSelect" disabled></select>
+            </div>
+          </div>
+
+          <label class="field-label" for="districtSelect">Fokus kecamatan</label>
+          <select id="districtSelect">
+            <option value="all">Semua kecamatan</option>
+          </select>
+
+          <button id="refreshRealtimeButton" class="realtime-refresh-button" type="button">Perbarui data pemantauan</button>
+          <div id="sourceStatus" class="source-status" aria-live="polite"></div>
+
+          <section id="liveUploadCard" class="live-upload-card" hidden aria-labelledby="liveUploadTitle">
+            <div class="live-upload-head">
+              <div>
+                <p class="eyebrow">Data operator</p>
+                <h4 id="liveUploadTitle">Pembaruan data kasus</h4>
+              </div>
+              <span id="liveUploadBadge" class="live-upload-badge">Belum ada data</span>
+            </div>
+            <p id="liveUploadSummary" class="live-upload-summary">Unggah Excel/CSV untuk memperbarui kasus bulan berjalan dan melengkapi input bulanan model.</p>
+            <div class="live-upload-actions">
+              <a id="downloadCaseTemplate" class="upload-secondary" href="/api/live-data/template">Unduh template</a>
+              <button id="openUploadButton" class="upload-primary" type="button">Unggah Excel / CSV</button>
+            </div>
+            <small>Upload ulang memperbarui kecamatan–bulan yang sama, bukan menjumlahkan data dua kali.</small>
+          </section>
+
+        </section>
+
+        <section class="metrics-section" aria-labelledby="summaryTitle">
+          <div class="section-heading compact">
+            <div>
+              <p class="eyebrow">Ringkasan</p>
+              <h3 id="summaryTitle">Ringkasan periode terpilih</h3>
+            </div>
+          </div>
+          <div class="metric-grid">
+            <article class="metric-card accent-red">
+              <span id="caseMetricLabel">Kasus tercatat</span>
+              <strong id="caseMetric">—</strong>
+              <small id="caseMetricNote">memuat data</small>
+            </article>
+            <article class="metric-card accent-amber">
+              <span>Peringatan</span>
+              <strong id="alertMetric">—</strong>
+              <small id="alertMetricNote">memuat data</small>
+            </article>
+            <article class="metric-card accent-teal">
+              <span>Cakupan wilayah</span>
+              <strong id="districtMetric">—</strong>
+              <small id="districtMetricNote">dari 16 kecamatan</small>
+            </article>
+            <article class="metric-card accent-blue">
+              <span>Prioritas teratas</span>
+              <strong id="topMetric">—</strong>
+              <small id="topMetricNote">skor relatif tertinggi</small>
+            </article>
+          </div>
+        </section>
+
+        <section class="chart-card" aria-labelledby="trendTitle">
+          <div class="section-heading compact">
+            <div>
+              <p class="eyebrow">Pola waktu</p>
+              <h3 id="trendTitle">Kasus dan peringatan bulanan</h3>
+            </div>
+          </div>
+          <div class="chart-wrap">
+            <canvas id="trendChart" aria-label="Grafik seri waktu kasus dan peringatan"></canvas>
+            <p id="chartFallback" class="chart-fallback" hidden>Grafik tidak dapat dimuat.</p>
+          </div>
+        </section>
+
+        <section class="ranking-card" aria-labelledby="rankingTitle">
+          <div class="section-heading compact">
+            <div>
+              <p class="eyebrow">Urutan wilayah</p>
+              <h3 id="rankingTitle">Urutan prioritas kecamatan</h3>
+            </div>
+          </div>
+          <ol id="rankingList" class="ranking-list"></ol>
+        </section>
+
+        <div class="data-note">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 9v4m0 4h.01M10.3 4.6 3.4 17a2 2 0 0 0 1.8 3h13.6a2 2 0 0 0 1.8-3L13.7 4.6a2 2 0 0 0-3.4 0Z"></path></svg>
+          <p id="dataNoteText">Skor menunjukkan peringatan relatif, bukan probabilitas klinis.</p>
+        </div>
+      </aside>
+
+      <section class="map-workspace" aria-label="Peta risiko leptospirosis">
+        <div class="map-toolbar">
+          <div>
+            <p id="mapEyebrow" class="eyebrow">Evaluasi historis</p>
+            <h2 id="mapTitle">Memuat evaluasi 2023…</h2>
+          </div>
+          <div class="map-actions">
+            <button id="resetMapButton" class="secondary-button" type="button">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7M3 4v6h6"></path></svg>
+              Reset peta
+            </button>
+            <button id="layerButton" class="secondary-button layer-button" type="button" aria-expanded="false">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 8 4-8 4-8-4 8-4Zm-8 9 8 4 8-4M4 17l8 4 8-4"></path></svg>
+              Layer
+            </button>
+            <button id="methodButton" class="secondary-button" type="button">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 11v5m0-8h.01"></path></svg>
+              Metode
+            </button>
+          </div>
+        </div>
+
+        <div class="map-frame">
+          <div id="map"></div>
+          <div id="loadingState" class="loading-state" role="status">
+            <span class="loader"></span>
+            <p>Memuat data spasial…</p>
+          </div>
+          <div id="errorState" class="error-state" hidden>
+            <strong>Data peta tidak dapat dimuat</strong>
+            <p>Periksa terminal backend atau muat ulang halaman.</p>
+          </div>
+          <div id="hoverCard" class="hover-card" aria-live="polite">
+            <span>Arahkan kursor pada kecamatan</span>
+            <strong>Ringkasan wilayah akan tampil di sini</strong>
+          </div>
+          <aside id="layerDrawer" class="layer-drawer" aria-label="Pengaturan layer" hidden>
+            <div class="layer-drawer-head">
+              <div><p class="eyebrow">Pengaturan peta</p><h3>Layer & basemap</h3><span>Aktifkan hanya informasi yang ingin dibaca.</span></div>
+              <button id="closeLayerButton" type="button" aria-label="Tutup layer">×</button>
+            </div>
+
+            <section class="layer-section">
+              <div class="layer-section-title"><span>Layer analisis</span><small>Overlay data</small></div>
+              <label class="layer-item" for="riskToggle">
+                <span class="layer-icon risk-icon">●</span>
+                <span class="layer-copy"><strong>Prioritas risiko</strong><small>Warna poligon berdasarkan skor relatif.</small></span>
+                <span class="switch"><input id="riskToggle" type="checkbox" checked><span class="switch-track"></span></span>
+              </label>
+              <label class="layer-item" for="boundaryToggle">
+                <span class="layer-icon boundary-icon">▱</span>
+                <span class="layer-copy"><strong>Batas kecamatan</strong><small>Garis administrasi 16 kecamatan.</small></span>
+                <span class="switch"><input id="boundaryToggle" type="checkbox" checked><span class="switch-track"></span></span>
+              </label>
+              <label class="layer-item" for="facilityToggle">
+                <span class="layer-icon facility-icon">+</span>
+                <span class="layer-copy"><strong>Fasilitas kesehatan</strong><small>Puskesmas dan rumah sakit pada dataset.</small></span>
+                <span class="switch"><input id="facilityToggle" type="checkbox"><span class="switch-track"></span></span>
+              </label>
+            </section>
+
+            <section class="layer-section basemap-section">
+              <div class="layer-section-title"><span>Basemap</span><small>Peta dasar</small></div>
+              <div class="basemap-choice">
+                <button class="basemap-btn active" data-basemap="osm" type="button"><span class="basemap-thumb osm-thumb"></span><span><strong>OpenStreetMap</strong><small>Peta jalan & label</small></span></button>
+                <button class="basemap-btn" data-basemap="satellite" type="button"><span class="basemap-thumb sat-thumb"></span><span><strong>Citra satelit</strong><small>Esri World Imagery</small></span></button>
+              </div>
+            </section>
+
+            <section class="layer-section legend-section">
+              <div class="layer-section-title"><span>Legenda</span><small>Kelas prioritas</small></div>
+              <div id="mapLegend" class="map-legend layer-legend" aria-label="Legenda peta"></div>
+            </section>
+            <p class="layer-source-note">Basemap © OpenStreetMap contributors · Citra © Esri dan kontributor penyedia citra.</p>
+          </aside>
+          <button id="closeDetailButton" class="detail-close" type="button" aria-label="Tutup detail kecamatan" hidden>×</button>
+          <aside id="detailPanel" class="detail-panel" aria-live="polite" hidden></aside>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <dialog id="uploadDialog" class="upload-dialog">
+    <div class="upload-dialog-header">
+      <div>
+        <p class="eyebrow">Pembaruan data kasus</p>
+        <h2>Unggah, validasi, lalu terapkan</h2>
+        <p>Data bulan berjalan boleh parsial untuk monitoring. Model hanya memakai empat bulan kalender lengkap terakhir.</p>
+      </div>
+      <button id="closeUploadDialog" class="dialog-close" type="button" aria-label="Tutup">×</button>
+    </div>
+    <div class="upload-dialog-body">
+      <div class="upload-stepper" aria-label="Tahapan pembaruan data">
+        <span class="active">1. Unggah</span><span>2. Validasi</span><span>3. Terapkan</span>
+      </div>
+      <label class="upload-dropzone" for="caseFileInput">
+        <input id="caseFileInput" type="file" accept=".xlsx,.csv" hidden>
+        <strong>Pilih file Excel (.xlsx) atau CSV</strong>
+        <span id="caseFileName">Belum ada file dipilih</span>
+        <small>Gunakan template LeptoScope agar nama kecamatan dan periode tetap konsisten.</small>
+      </label>
+      <div id="uploadValidationState" class="upload-validation-state" hidden></div>
+      <div id="uploadSummaryGrid" class="upload-summary-grid" hidden></div>
+      <div id="uploadIssues" class="upload-issues" hidden></div>
+      <div id="uploadPreviewWrap" class="upload-preview-wrap" hidden>
+        <div class="upload-preview-heading"><strong>Preview data yang diunggah</strong><span>Maksimum 24 baris ditampilkan</span></div>
+        <div class="upload-table-scroll"><table class="upload-preview-table"><thead><tr><th>Baris</th><th>Periode</th><th>Kecamatan</th><th>Kasus</th><th>Status</th></tr></thead><tbody id="uploadPreviewBody"></tbody></table></div>
+      </div>
+      <div class="upload-dialog-actions">
+        <a class="upload-secondary" href="/api/live-data/template">Unduh template</a>
+        <button id="validateUploadButton" class="upload-secondary" type="button" disabled>Validasi file</button>
+        <button id="applyUploadButton" class="upload-primary" type="button" disabled>Terapkan & perbarui peta</button>
+      </div>
+    </div>
+  </dialog>
+
+  <dialog id="methodDialog" class="method-dialog">
+    <div class="dialog-header">
+      <div>
+        <p class="eyebrow">Tentang analisis</p>
+        <h2>Metode LeptoScope</h2>
+      </div>
+      <button id="closeMethodButton" class="dialog-close" type="button" aria-label="Tutup">×</button>
+    </div>
+    <div class="dialog-body">
+      <p>LeptoScope menggabungkan evaluasi historis 2018–2023, simulasi skenario, serta pemantauan eksperimental berbasis pembaruan cuaca dan data kasus operator. Model memprioritaskan kecamatan untuk bulan berikutnya; hasil operasional belum divalidasi.</p>
+      <div class="method-metrics">
+        <div><span>ROC-AUC</span><strong id="rocMetric">0,749</strong></div>
+        <div><span>PR-AUC</span><strong id="prMetric">0,271</strong></div>
+        <div><span>Recall</span><strong id="recallMetric">92%</strong></div>
+        <div><span>Threshold</span><strong id="thresholdMetric">0,045</strong></div>
+      </div>
+      <h3>Pemantauan eksperimental</h3>
+      <p>Prediksi bulan berjalan memakai bulan kalender terakhir yang sudah lengkap. Cuaca Open-Meteo diagregasi per bulan kalender untuk periode input dan dua lag sebelumnya. Data kasus operator hanya dipakai bila matriks 16 kecamatan × 4 bulan sampai periode input lengkap; jika tidak, sistem menandainya sebagai fallback historis.</p>
+      <h3>Penduduk dan kepadatan</h3>
+      <p>Angka 2025 berasal dari BPS Kota Semarang, <em>Kota Semarang Dalam Angka 2026</em>, Tabel 3.1.1. Nilai 2026 adalah estimasi dari angka resmi 2025 dan laju pertumbuhan 2020–2025, sehingga tidak ditampilkan sebagai angka resmi BPS 2026.</p>
+      <h3>Batas penggunaan</h3>
+      <p>Skor adalah peringatan relatif untuk prioritisasi, bukan diagnosis atau probabilitas klinis. Hasil harus dipadukan dengan verifikasi lapangan dan surveilans kesehatan.</p>
+    </div>
+  </dialog>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+  <script src="dashboard-v22.js?v=31"></script>
+  <script src="simulation-v20.js?v=22"></script>
+  <script src="model-metrics-v3.js?v=22"></script>
+</body>
+</html>

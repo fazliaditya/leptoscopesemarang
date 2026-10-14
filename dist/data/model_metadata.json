@@ -1,0 +1,32 @@
+{
+  "model_name": "Logistic Elastic Net V3",
+  "model_version": "3.0.0",
+  "evaluation_period": "Data test tahun 2023 (evaluasi retrospektif)",
+  "threshold": 0.045,
+  "roc_auc": 0.7489820359281436,
+  "pr_auc": 0.27055630275804576,
+  "precision": 0.23,
+  "recall": 0.92,
+  "f1": 0.368,
+  "balanced_accuracy": 0.7294610778443114,
+  "confusion_matrix": {
+    "tn": 90,
+    "fp": 77,
+    "fn": 2,
+    "tp": 23
+  },
+  "test_metrics": {
+    "roc_auc": 0.7489820359281436,
+    "pr_auc": 0.27055630275804576,
+    "precision": 0.23,
+    "recall": 0.92,
+    "f1": 0.368,
+    "balanced_accuracy": 0.7294610778443114,
+    "threshold": 0.045,
+    "tn": 90,
+    "fp": 77,
+    "fn": 2,
+    "tp": 23
+  },
+  "important_note": "Skor merupakan peringatan risiko relatif, bukan probabilitas klinis terkalibrasi."
+}

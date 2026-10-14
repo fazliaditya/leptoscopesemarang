@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 112" role="img" aria-labelledby="t d">
+  <title id="t">LeptoScope</title><desc id="d">Logo pin peta dengan garis kontur.</desc>
+  <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#195b68"/><stop offset="1" stop-color="#2a9b86"/></linearGradient></defs>
+  <path d="M48 4C24 4 8 21 8 44c0 29 40 64 40 64s40-35 40-64C88 21 72 4 48 4Z" fill="url(#g)"/>
+  <circle cx="48" cy="43" r="26" fill="#f7f5f0" opacity=".98"/>
+  <path d="M25 49c8-12 18-18 29-17 9 1 15 6 20 14M27 58c8-10 18-15 29-13 8 1 13 5 18 11M29 39c9-8 18-11 27-9" fill="none" stroke="#2a9b86" stroke-width="4" stroke-linecap="round"/>
+  <path d="M43 25v36h12" fill="none" stroke="#123643" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="LeptoScope, WebGIS untuk prioritisasi surveilans leptospirosis di Kota Semarang.">
+  <title>LeptoScope</title>
+  <link rel="icon" href="assets/leptoscope-mark.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://unpkg.com">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="landing.css?v=7">
+</head>
+<body>
+<header class="site-header">
+  <nav class="nav wrap" id="mainNav">
+    <a class="nav-logo" href="#top" aria-label="LeptoScope"><img src="assets/leptoscope-logo.svg" alt="LeptoScope"></a>
+    <button class="menu-btn" id="menuBtn" aria-label="Buka menu">☰</button>
+    <div class="nav-links">
+      <a href="#berita">Berita</a>
+      <a href="#pengantar">Pengantar</a>
+      <a href="#fitur">Fitur</a>
+      <a href="#alur">Alur</a>
+    </div>
+    <a class="btn btn-primary nav-cta" href="map.html">Masuk ke WebGIS</a>
+  </nav>
+</header>
+
+<main id="top">
+  <section class="news-first" id="berita">
+    <div class="wrap">
+      <div class="news-heading">
+        <div>
+          <span class="kicker">Berita & konteks</span>
+          <h1>Leptospirosis di Kota Semarang: risiko lingkungan, banjir, dan kebutuhan surveilans spasial.</h1>
+        </div>
+        <p>LeptoScope menempatkan data kasus, kondisi lingkungan, faktor iklim, dan karakteristik wilayah dalam satu kerangka spasial. Tujuannya bukan memberi diagnosis, tetapi membantu pengguna memahami mengapa lokasi dan waktu perlu dibaca bersama sebelum menentukan prioritas surveilans.</p>
+      </div>
+
+      <div class="context-strip" aria-label="Konteks utama leptospirosis">
+        <article><span>01</span><div><strong>Paparan lingkungan</strong><p>Penularan dapat terjadi melalui air atau tanah yang terkontaminasi urine hewan, sehingga kondisi sanitasi dan genangan perlu diperhatikan.</p></div></article>
+        <article><span>02</span><div><strong>Hujan dan banjir</strong><p>Periode hujan dan kejadian banjir dapat meningkatkan peluang kontak dengan lingkungan tercemar dan mempersulit pengendalian di lapangan.</p></div></article>
+        <article><span>03</span><div><strong>Wilayah tidak homogen</strong><p>Setiap kecamatan memiliki karakteristik kepadatan, fasilitas, lingkungan, dan riwayat kasus yang berbeda sehingga prioritas tidak dapat disamaratakan.</p></div></article>
+        <article><span>04</span><div><strong>Surveilans berbasis lokasi</strong><p>Peta membantu menghubungkan pola waktu dengan posisi geografis agar verifikasi dan tindak lanjut dapat diarahkan secara lebih terstruktur.</p></div></article>
+      </div>
+
+      <div class="editorial-grid">
+        <a class="story story-featured" href="https://www.kemkes.go.id/id/kemenkes-siaga-penanggulangan-leptospirosis-pasca-bencana" target="_blank" rel="noopener">
+          <div class="story-media">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/b/b0/Semarang%2C_Indonesia_ESA402310.jpg" alt="Citra satelit Kota Semarang" loading="eager">
+            <span class="story-badge">Pascabencana</span>
+          </div>
+          <div class="story-copy">
+            <div class="story-source">Kementerian Kesehatan RI · 18 Desember 2025</div>
+            <h2>Kewaspadaan leptospirosis meningkat setelah banjir dan bencana hidrometeorologi.</h2>
+            <p>Kemenkes mengingatkan bahwa leptospirosis sering muncul setelah banjir, dapat berawal seperti demam biasa, dan membutuhkan deteksi serta penanganan cepat.</p>
+            <span class="story-link">Baca sumber resmi ↗</span>
+            <small>Ilustrasi: ESA/Copernicus via Wikimedia Commons, CC BY-SA 3.0 IGO.</small>
+          </div>
+        </a>
+
+        <div class="story-stack">
+          <a class="story story-compact" href="https://www.who.int/indonesia/id/news/detail/12-10-2026-joint-action-to-reduce-zoonotic-disease-risks-in-indonesia" target="_blank" rel="noopener">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/4/44/Brown_Rat_%28Rattus_norvegicus%29.jpg" alt="Tikus cokelat Rattus norvegicus" loading="lazy">
+            <div><div class="story-source">WHO Indonesia · 12 Oktober 2026</div><h3>Penilaian risiko bersama memperkuat surveilans zoonosis.</h3><p>WHO menyoroti surveilans terintegrasi, sanitasi, pengelolaan limbah, dan pengendalian tikus sebagai bagian aksi leptospirosis.</p><span class="story-link">Baca ↗</span></div>
+          </a>
+          <a class="story story-compact" href="https://www.who.int/indonesia/id/news/detail/06-04-2026-who-commends-indonesia-s-leadership-in-one-health-action-to-reduce-risks-from-priority-zoonotic-diseases" target="_blank" rel="noopener">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/7/77/Rain_Storm.jpg" alt="Hujan deras" loading="lazy">
+            <div><div class="story-source">WHO Indonesia · 6 April 2026</div><h3>One Health menghubungkan manusia, hewan, dan lingkungan.</h3><p>Untuk leptospirosis, deteksi dini, surveilans terintegrasi, penilaian risiko, dan kesiapan wilayah rawan banjir menjadi bagian penting.</p><span class="story-link">Baca ↗</span></div>
+          </a>
+          <a class="story story-compact" href="https://www.who.int/indonesia/id/news/detail/20-04-2026-indonesia-advances-one-health-and-pandemic-preparedness-through-care-i" target="_blank" rel="noopener">
+            <img src="https://commons.wikimedia.org/wiki/Special:Redirect/file/Pola%20Hujan%20di%20Indonesia.jpg" alt="Pola curah hujan Indonesia" loading="lazy">
+            <div><div class="story-source">WHO Indonesia · 20 April 2026</div><h3>Penguatan sistem surveilans membutuhkan data yang lebih terhubung.</h3><p>CARE-I menekankan penguatan deteksi, respons, laboratorium, serta koordinasi lintas sektor pada tingkat nasional dan daerah.</p><span class="story-link">Baca ↗</span></div>
+          </a>
+        </div>
+      </div>
+      <div class="image-credit-note">Kredit ilustrasi terbuka: <a href="https://commons.wikimedia.org/wiki/File:Semarang,_Indonesia_ESA402310.jpg" target="_blank" rel="noopener">ESA/Copernicus</a>, <a href="https://commons.wikimedia.org/wiki/File:Brown_Rat_(Rattus_norvegicus).jpg" target="_blank" rel="noopener">Dunpharlain</a>, <a href="https://commons.wikimedia.org/wiki/File:Rain_Storm.jpg" target="_blank" rel="noopener">Chris Nystrom</a>, dan <a href="https://commons.wikimedia.org/wiki/File:Pola_Hujan_di_Indonesia.jpg" target="_blank" rel="noopener">BMKG RI</a>. Tautan berita tetap menuju sumber resmi.</div>
+    </div>
+  </section>
+
+  <section class="intro-section" id="pengantar">
+    <div class="wrap intro-grid">
+      <div class="intro-copy">
+        <span class="kicker">Pengantar LeptoScope</span>
+        <h2>WebGIS untuk membantu melihat pola, membandingkan wilayah, dan menentukan prioritas surveilans.</h2>
+        <p class="lead">LeptoScope menggabungkan data kasus, cuaca, karakteristik wilayah, fasilitas kesehatan, dan hasil model ke dalam satu ruang analisis spasial untuk 16 kecamatan Kota Semarang.</p>
+        <p>Pengguna dapat berpindah dari evaluasi historis, membaca tren kasus, membandingkan kecamatan, mengatur layer peta, sampai menjalankan simulasi respons model. Produk ini tidak menggantikan surveilans epidemiologi maupun verifikasi lapangan; skor digunakan sebagai <strong>peringatan relatif</strong> untuk membantu menentukan urutan telaah wilayah.</p>
+        <div class="intro-actions"><a class="btn btn-primary" href="map.html">Masuk ke peta interaktif</a><a class="btn btn-quiet" href="#fitur">Lihat fitur</a></div>
+        <div class="stats-row">
+          <div><strong>16</strong><span>kecamatan</span></div>
+          <div><strong>2018–2023</strong><span>evaluasi historis</span></div>
+          <div><strong>92%</strong><span>recall data uji 2023</span></div>
+        </div>
+      </div>
+      <div class="preview-panel">
+        <div class="preview-bar"><div><span class="preview-dot"></span><strong>Pratinjau WebGIS</strong></div><a href="map.html">Buka penuh ↗</a></div>
+        <div id="previewMap"></div>
+        <div class="preview-caption"><span>Poligon menunjukkan kelas prioritas relatif antarkecamatan.</span><span>Basemap: OpenStreetMap</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="feature-section" id="fitur">
+    <div class="wrap">
+      <div class="section-title"><span class="kicker">Isi WebGIS</span><h2>Apa yang dapat dilakukan di dalam LeptoScope?</h2><p>Setiap bagian dibuat untuk menjawab kebutuhan berbeda—mulai dari evaluasi historis sampai penelusuran kecamatan dan simulasi respons model.</p></div>
+      <div class="feature-grid">
+        <article><span class="feature-no">01</span><h3>Evaluasi historis</h3><p>Menelusuri data 2018–2023 per tahun dan bulan untuk melihat pola kasus serta hasil peringatan model.</p></article>
+        <article><span class="feature-no">02</span><h3>Peta prioritas</h3><p>Klik kecamatan untuk membuka ringkasan skor, kelas prioritas, kasus, dan informasi wilayah secara langsung.</p></article>
+        <article><span class="feature-no">03</span><h3>Layer interaktif</h3><p>Atur poligon prioritas, batas kecamatan, fasilitas kesehatan, serta pilih OpenStreetMap atau citra satelit.</p></article>
+        <article><span class="feature-no">04</span><h3>Tren & peringkat</h3><p>Bandingkan tren bulanan dan urutan kecamatan agar pola temporal tidak terpisah dari konteks spasial.</p></article>
+        <article><span class="feature-no">05</span><h3>Pemantauan eksperimental</h3><p>Menggunakan bulan kalender terakhir yang lengkap untuk memberi peringatan pada bulan berjalan dengan status sumber data yang jelas.</p></article>
+        <article><span class="feature-no">06</span><h3>Simulasi skenario</h3><p>Menguji perubahan input terkontrol untuk memahami respons model—tanpa mengklaim hubungan sebab akibat.</p></article>
+      </div>
+    </div>
+  </section>
+
+  <section class="workflow-section" id="alur">
+    <div class="wrap workflow-grid">
+      <div class="section-title compact"><span class="kicker">Alur penggunaan</span><h2>Dari data menuju keputusan yang dapat ditelusuri.</h2><p>Struktur penggunaan dibuat sederhana agar pengguna nonteknis tetap dapat memahami dari mana informasi berasal.</p></div>
+      <div class="workflow-list">
+        <div><i>1</i><span><strong>Pilih periode.</strong> Tentukan evaluasi tahunan, bulanan, atau pemantauan eksperimental.</span></div>
+        <div><i>2</i><span><strong>Atur layer.</strong> Gunakan OSM atau citra, lalu tampilkan prioritas, batas kecamatan, dan fasilitas kesehatan sesuai kebutuhan.</span></div>
+        <div><i>3</i><span><strong>Telusuri wilayah.</strong> Klik kecamatan untuk membaca detail dan bandingkan dengan grafik serta ranking.</span></div>
+        <div><i>4</i><span><strong>Interpretasikan secara hati-hati.</strong> Gunakan skor sebagai penapisan awal yang tetap memerlukan validasi lapangan.</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="cta-section"><div class="wrap cta-box"><div><span class="kicker light">Ruang analisis</span><h2>Masuk ke WebGIS LeptoScope.</h2><p>Gunakan peta interaktif untuk menelusuri periode, kecamatan, layer, serta detail model secara langsung.</p></div><a class="btn btn-light" href="map.html">Buka WebGIS →</a></div></section>
+</main>
+
+<footer class="footer"><div class="wrap"><img src="assets/leptoscope-logo.svg" alt="LeptoScope"><div><small>Prototype pendukung prioritisasi surveilans leptospirosis · Kota Semarang.</small><small>Basemap peta: © OpenStreetMap contributors; citra: Esri World Imagery.</small></div></div></footer>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="landing.js?v=4"></script>
+</body>
+</html>
