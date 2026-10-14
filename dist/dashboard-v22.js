@@ -826,7 +826,13 @@
         ${currentWeatherGrid}
         ${sourceRow("Observasi cuaca", currentWeatherReady ? formatDateTime(meta.current_weather_time) : "—")}
         ${sourceRow(`Cuaca model ${monthLabel(meta.model_input_period)}`, modelWeather)}
-        ${sourceRow("Kasus model", casesOk ? `lengkap · ${monthLabel(meta.model_input_period)}` : `fallback · ${meta.case_valid_slots || 0}/${meta.case_required_slots || 64} slot`)}
+       
+${sourceRow("Data kasus model",
+  casesOk
+    ? `Data terkini · ${monthLabel(meta.model_input_period)}`
+    : `Data belum lengkap · ${meta.case_valid_slots || 0} dari ${meta.case_required_slots || 64} entri`
+)}
+
         ${sourceRow("Kasus berjalan", (meta.monitoring_districts_reported || 0) > 0 ? `${monthLabel(meta.monitoring_period)} · ${meta.monitoring_districts_reported}/16 kecamatan · ${formatInteger(meta.monitoring_case_total)} kasus sementara` : `${monthLabel(meta.monitoring_period)} · belum ada laporan`)}
         ${sourceRow("Target peringatan", dateMonthLabel(meta.prediction_target))}
         ${sourceRow("Penduduk", "BPS 2025 · estimasi 2026")}
