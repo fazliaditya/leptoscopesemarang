@@ -2,7 +2,6 @@
 from pathlib import Path
 from copy import deepcopy
 from datetime import datetime, timezone, timedelta
-from backend.app import app
 import json
 
 import joblib
