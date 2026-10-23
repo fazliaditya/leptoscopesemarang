@@ -232,40 +232,180 @@ def _fetch_current_conditions(locations):
             "current_wind_speed_kmh": current.get("wind_speed_10m"),
         }
     return items
+
+def _fetch_current_conditions(locations):
+    """
+    Mengambil cuaca terkini dari Open-Meteo untuk seluruh
+    titik representatif kecamatan.
+
+    Data cuaca aktual digunakan untuk tampilan dashboard,
+    bukan menggantikan agregat cuaca bulanan model.
+    """
+    if not locations:
+        return {}
+
+    parameters = {
+        "latitude": ",".join(
+            str(item["latitude"]) for item in locations
+        ),
+        "longitude": ",".join(
+            str(item["longitude"]) for item in locations
+        ),
+        "current": (
+            "temperature_2m,"
+            "relative_humidity_2m,"
+            "precipitation,"
+            "rain,"
+            "wind_speed_10m"
+        ),
+        "timezone": "Asia/Jakarta",
+        "wind_speed_unit": "kmh",
+        "precipitation_unit": "mm",
+    }
+
+    request = Request(
+        f"{CURRENT_WEATHER_URL}?{urlencode(parameters)}",
+        headers={
+            "User-Agent": "LeptoScope/7.0"
+        },
+    )
+
+    with urlopen(request, timeout=15) as response:
+        payload = json.loads(
+            response.read().decode("utf-8")
+        )
+
+    responses = (
+        payload
+        if isinstance(payload, list)
+        else [payload]
+    )
+
+    if len(responses) != len(locations):
+        raise ValueError(
+            "Jumlah respons cuaca tidak sesuai "
+            "dengan jumlah kecamatan."
+        )
+
+    items = {}
+
+    for location, weather in zip(locations, responses):
+        current = weather.get("current") or {}
+        observed_at = current.get("time")
+
+        if observed_at:
+            observed_at = datetime.fromisoformat(
+                str(observed_at).replace("Z", "+00:00")
+            )
+
+            if observed_at.tzinfo is None:
+                observed_at = observed_at.replace(
+                    tzinfo=JAKARTA_TZ
+                )
+
+            observed_at = observed_at.astimezone(
+                JAKARTA_TZ
+            ).isoformat()
+
+        key = (
+            location["code"]
+            or normalize_name(location["name"])
+        )
+
+        items[key] = {
+            "current_time": observed_at,
+            "current_temperature_c": current.get(
+                "temperature_2m"
+            ),
+            "current_humidity_pct": current.get(
+                "relative_humidity_2m"
+            ),
+            "current_precipitation_mm": current.get(
+                "precipitation"
+            ),
+            "current_rain_mm": current.get("rain"),
+            "current_wind_speed_kmh": current.get(
+                "wind_speed_10m"
+            ),
+        }
+
+    return items
+
+
 def _fetch_weather(locations, now, input_month):
-    input_start = pd.Timestamp(input_month.year, input_month.month, 1)
+    """
+    Mengambil agregat cuaca untuk tiga bulan kalender
+    lengkap sebagai input model.
+
+    Cuaca terkini diambil secara terpisah agar tidak
+    mengubah definisi fitur historis model.
+    """
+    if not locations:
+        raise ValueError(
+            "Lokasi kecamatan tidak tersedia."
+        )
+
+    input_start = pd.Timestamp(
+        input_month.year,
+        input_month.month,
+        1,
+    )
+
     start_date = input_start - pd.DateOffset(months=2)
     end_date = input_start + pd.offsets.MonthEnd(0)
+
     parameters = {
-        "latitude": ",".join(str(item["latitude"]) for item in locations),
-        "longitude": ",".join(str(item["longitude"]) for item in locations),
+        "latitude": ",".join(
+            str(item["latitude"]) for item in locations
+        ),
+        "longitude": ",".join(
+            str(item["longitude"]) for item in locations
+        ),
         "daily": (
-            "temperature_2m_mean,relative_humidity_2m_mean,"
+            "temperature_2m_mean,"
+            "relative_humidity_2m_mean,"
             "precipitation_sum"
         ),
         "start_date": start_date.date().isoformat(),
         "end_date": end_date.date().isoformat(),
         "timezone": "Asia/Jakarta",
     }
+
     request = Request(
         f"{WEATHER_URL}?{urlencode(parameters)}",
-        headers={"User-Agent": "LeptoScope/7.0 (+public-health WebGIS)"},
+        headers={
+            "User-Agent": "LeptoScope/7.0"
+        },
     )
-    with urlopen(request, timeout=35) as response:
-        payload = json.loads(response.read().decode("utf-8"))
-    responses = payload if isinstance(payload, list) else [payload]
-    if len(responses) != len(locations):
-        raise ValueError("Jumlah lokasi cuaca tidak sesuai jumlah kecamatan.")
 
-    # Near-real-time conditions are intentionally fetched separately from the
-    # completed-month aggregates used by the model. This keeps the prediction
-    # methodology stable while still giving the dashboard current observations.
-  
+    with urlopen(request, timeout=20) as response:
+        payload = json.loads(
+            response.read().decode("utf-8")
+        )
+
+    responses = (
+        payload
+        if isinstance(payload, list)
+        else [payload]
+    )
+
+    if len(responses) != len(locations):
+        raise ValueError(
+            "Jumlah respons cuaca bulanan "
+            "tidak sesuai jumlah kecamatan."
+        )
+
+    # Cuaca aktual bersifat opsional.
+    # Gagal mengambil data terkini tidak boleh
+    # menggagalkan seluruh prediksi bulanan.
+
     current_items = {}
     current_error = None
 
     try:
-        current_items = _fetch_current_conditions(locations)
+        current_items = _fetch_current_conditions(
+            locations
+        )
     except Exception as error:
         current_error = str(error)[:240]
 
@@ -282,68 +422,56 @@ def _fetch_weather(locations, now, input_month):
             input_month,
         )
 
-        key = location["code"] or normalize_name(location["name"])
+        key = (
+            location["code"]
+            or normalize_name(location["name"])
+        )
 
-        summary.update({
-            "current_time": None,
-            "current_temperature_c": None,
-            "current_humidity_pct": None,
-            "current_precipitation_mm": None,
-            "current_rain_mm": None,
-            "current_wind_speed_kmh": None,
-            "latitude": weather.get(
-                "latitude", location["latitude"]
-            ),
-            "longitude": weather.get(
-                "longitude", location["longitude"]
-            ),
-        })
-
-        if key in current_items:
-            summary.update(current_items[key])
-
-        items[key] = summary
-
-    return {
-        "fetched_at": now.isoformat(),
-        "source": "Open-Meteo: cuaca aktual dan agregat bulanan",
-        "model_input_month": pd.Timestamp(
-            input_month.year, input_month.month, 1
-        ).strftime("%Y-%m"),
-        "current_status": (
-            "live" if current_items else "unavailable"
-        ),
-        "current_error": current_error,
-        "items": items,
-    }
-        key = location["code"] or normalize_name(location["name"])
-        
         summary.update(
             {
-                "current_time": current_data.get("current_time"),
-                "current_temperature_c": current_data.get("current_temperature_c"),
-                "current_humidity_pct": current_data.get("current_humidity_pct"),
-                "current_precipitation_mm": current_data.get("current_precipitation_mm"),
-                "current_rain_mm": current_data.get("current_rain_mm"),
-                "current_wind_speed_kmh": current_data.get("current_wind_speed_kmh"),
-                "latitude": weather.get("latitude", location["latitude"]),
-                "longitude": weather.get("longitude", location["longitude"]),
+                "current_time": None,
+                "current_temperature_c": None,
+                "current_humidity_pct": None,
+                "current_precipitation_mm": None,
+                "current_rain_mm": None,
+                "current_wind_speed_kmh": None,
+                "latitude": weather.get(
+                    "latitude",
+                    location["latitude"],
+                ),
+                "longitude": weather.get(
+                    "longitude",
+                    location["longitude"],
+                ),
             }
         )
 
         if key in current_items:
             summary.update(current_items[key])
+
         items[key] = summary
+
+    has_current = any(
+        item.get("current_time")
+        for item in current_items.values()
+    )
 
     return {
         "fetched_at": now.isoformat(),
-        "source": "Open-Meteo: current conditions + agregat bulan kalender lengkap",
-        "model_input_month": pd.Timestamp(input_month.year, input_month.month, 1).strftime("%Y-%m"),
-        "current_status": "live" if current_items else "unavailable",
+        "source": (
+            "Open-Meteo: cuaca terkini dan "
+            "agregat bulan kalender lengkap"
+        ),
+        "model_input_month": input_start.strftime(
+            "%Y-%m"
+        ),
+        "current_status": (
+            "live" if has_current else "unavailable"
+        ),
         "current_error": current_error,
         "items": items,
     }
-
+    
 
 def load_weather(base_geojson, live_dir, force_refresh=False, now=None, input_month=None):
     now = now or datetime.now(JAKARTA_TZ)
@@ -364,9 +492,18 @@ def load_weather(base_geojson, live_dir, force_refresh=False, now=None, input_mo
         }
 
     try:
-        fresh = _fetch_weather(locations, now, input_month)
-        _write_json(cache_path, fresh)
-        return fresh["items"], {
+        
+fresh = _fetch_weather(locations, now, input_month)
+
+try:
+    _write_json(cache_path, fresh)
+except OSError:
+    # Penyimpanan cache dapat dibatasi di Vercel.
+    # Data yang berhasil diambil tetap dapat digunakan.
+    pass
+
+return fresh["items"], {
+
             "source": fresh["source"],
             "status": "live",
             "fetched_at": fresh["fetched_at"],
