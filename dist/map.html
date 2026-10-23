@@ -276,7 +276,7 @@
       <button id="closeMethodButton" class="dialog-close" type="button" aria-label="Tutup">×</button>
     </div>
     <div class="dialog-body">
-      <p>LeptoScope menggabungkan evaluasi historis 2018–2023, simulasi skenario, serta pemantauan eksperimental berbasis pembaruan cuaca dan data kasus operator. Model memprioritaskan kecamatan untuk bulan berikutnya; hasil operasional belum divalidasi.</p>
+      <p>LeptoScope merupakan prototipe WebGIS untuk mendukung penentuan prioritas surveilans leptospirosis di 16 kecamatan Kota Semarang. Sistem mengintegrasikan evaluasi historis 2018–2023, analisis spasial, pemantauan cuaca, dan simulasi skenario. Kinerja model dievaluasi menggunakan data historis, sedangkan pemantauan periode berjalan masih bersifat eksperimental dan memerlukan validasi lanjutan.</p>
       <div class="method-metrics">
         <div><span>ROC-AUC</span><strong id="rocMetric">0,749</strong></div>
         <div><span>PR-AUC</span><strong id="prMetric">0,271</strong></div>
@@ -284,11 +284,11 @@
         <div><span>Threshold</span><strong id="thresholdMetric">0,045</strong></div>
       </div>
       <h3>Pemantauan eksperimental</h3>
-      <p>Prediksi bulan berjalan memakai bulan kalender terakhir yang sudah lengkap. Cuaca Open-Meteo diagregasi per bulan kalender untuk periode input dan dua lag sebelumnya. Data kasus operator hanya dipakai bila matriks 16 kecamatan × 4 bulan sampai periode input lengkap; jika tidak, sistem menandainya sebagai fallback historis.</p>
+      <p>Peringatan bulanan menggunakan data dari bulan kalender terakhir yang telah lengkap. Data cuaca Open-Meteo diolah berdasarkan periode input dan dua bulan sebelumnya, sedangkan pengamatan terkini ditampilkan secara terpisah. Data kasus operator digunakan apabila tersedia lengkap untuk 16 kecamatan selama empat bulan. Ketidaklengkapan data ditangani menggunakan pola historis sebagai data pengganti (fallback) dengan status yang ditampilkan secara eksplisit.</p>
       <h3>Penduduk dan kepadatan</h3>
       <p>Angka 2025 berasal dari BPS Kota Semarang, <em>Kota Semarang Dalam Angka 2026</em>, Tabel 3.1.1. Nilai 2026 adalah estimasi dari angka resmi 2025 dan laju pertumbuhan 2020–2025, sehingga tidak ditampilkan sebagai angka resmi BPS 2026.</p>
       <h3>Batas penggunaan</h3>
-      <p>Skor adalah peringatan relatif untuk prioritisasi, bukan diagnosis atau probabilitas klinis. Hasil harus dipadukan dengan verifikasi lapangan dan surveilans kesehatan.</p>
+      <p>Skor LeptoScope menunjukkan prioritas relatif antarkecamatan, bukan diagnosis, probabilitas klinis, atau kepastian kejadian penyakit. Hasil analisis dapat mendukung identifikasi wilayah yang memerlukan perhatian surveilans dan eksplorasi skenario lingkungan. Pemanfaatan secara operasional tetap memerlukan validasi model, integrasi data kasus resmi, serta verifikasi lapangan.</p>
     </div>
   </dialog>
 
