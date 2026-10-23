@@ -232,59 +232,6 @@ def _fetch_current_conditions(locations):
             "current_wind_speed_kmh": current.get("wind_speed_10m"),
         }
     return items
-
-
-def _fetch_current_conditions(locations):
-    url = "https://api.open-meteo.com/v1/forecast"
-
-    parameters = {
-        "latitude": ",".join(str(x["latitude"]) for x in locations),
-        "longitude": ",".join(str(x["longitude"]) for x in locations),
-        "current": (
-            "temperature_2m,relative_humidity_2m,"
-            "precipitation,rain,wind_speed_10m"
-        ),
-        "timezone": "Asia/Jakarta",
-    }
-
-    request = Request(
-        f"{url}?{urlencode(parameters)}",
-        headers={"User-Agent": "LeptoScope/6.1"},
-    )
-
-    with urlopen(request, timeout=35) as response:
-        payload = json.loads(response.read().decode("utf-8"))
-
-    results = payload if isinstance(payload, list) else [payload]
-
-    if len(results) != len(locations):
-        raise ValueError("Jumlah lokasi cuaca tidak sesuai.")
-
-    data = {}
-
-    for location, result in zip(locations, results):
-        current = result.get("current") or {}
-        observed_at = current.get("time")
-
-        if observed_at:
-            dt = datetime.fromisoformat(observed_at)
-            if dt.tzinfo is None:
-                dt = dt.replace(tzinfo=JAKARTA_TZ)
-            observed_at = dt.isoformat()
-
-        key = location["code"] or normalize_name(location["name"])
-
-        data[key] = {
-            "current_time": observed_at,
-            "current_temperature_c": current.get("temperature_2m"),
-            "current_humidity_pct": current.get("relative_humidity_2m"),
-            "current_precipitation_mm": current.get("precipitation"),
-            "current_rain_mm": current.get("rain"),
-            "current_wind_speed_kmh": current.get("wind_speed_10m"),
-        }
-
-    return data
-
 def _fetch_weather(locations, now, input_month):
     input_start = pd.Timestamp(input_month.year, input_month.month, 1)
     start_date = input_start - pd.DateOffset(months=2)
@@ -313,28 +260,62 @@ def _fetch_weather(locations, now, input_month):
     # Near-real-time conditions are intentionally fetched separately from the
     # completed-month aggregates used by the model. This keeps the prediction
     # methodology stable while still giving the dashboard current observations.
+  
     current_items = {}
     current_error = None
+
     try:
         current_items = _fetch_current_conditions(locations)
     except Exception as error:
         current_error = str(error)[:240]
-try:
-    current_by_location = _fetch_current_conditions(locations)
-except Exception:
-    current_by_location = {}
+
     items = {}
+
     for location, weather in zip(locations, responses):
         daily = weather.get("daily") or {}
+
         summary = _calendar_month_summary(
-        key = location["code"] or normalize_name(location["name"])
-        current_data = current_by_location.get(key) or {}
             daily.get("time") or [],
             daily.get("precipitation_sum") or [],
             daily.get("relative_humidity_2m_mean") or [],
             daily.get("temperature_2m_mean") or [],
             input_month,
         )
+
+        key = location["code"] or normalize_name(location["name"])
+
+        summary.update({
+            "current_time": None,
+            "current_temperature_c": None,
+            "current_humidity_pct": None,
+            "current_precipitation_mm": None,
+            "current_rain_mm": None,
+            "current_wind_speed_kmh": None,
+            "latitude": weather.get(
+                "latitude", location["latitude"]
+            ),
+            "longitude": weather.get(
+                "longitude", location["longitude"]
+            ),
+        })
+
+        if key in current_items:
+            summary.update(current_items[key])
+
+        items[key] = summary
+
+    return {
+        "fetched_at": now.isoformat(),
+        "source": "Open-Meteo: cuaca aktual dan agregat bulanan",
+        "model_input_month": pd.Timestamp(
+            input_month.year, input_month.month, 1
+        ).strftime("%Y-%m"),
+        "current_status": (
+            "live" if current_items else "unavailable"
+        ),
+        "current_error": current_error,
+        "items": items,
+    }
         key = location["code"] or normalize_name(location["name"])
         
         summary.update(
