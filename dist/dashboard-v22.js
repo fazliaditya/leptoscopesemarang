@@ -824,7 +824,9 @@
       elements.sourceStatus.innerHTML = `
         <div class="source-status-head"><span class="source-dot ${weatherOk ? "ok" : "warn"}"></span><strong>${escapeHTML(meta.readiness || "Status sumber data")}</strong></div>
         ${currentWeatherGrid}
-        ${sourceRow("Observasi cuaca", currentWeatherReady ? formatDateTime(meta.current_weather_time) : "—")}
+        
+${sourceRow("Pengamatan cuaca terakhir", currentWeatherReady ? formatDateTime(meta.current_weather_time) : "Belum tersedia")}
+
         ${sourceRow(`Cuaca model ${monthLabel(meta.model_input_period)}`, modelWeather)}
        
 ${sourceRow("Data kasus model",
