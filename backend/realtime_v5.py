@@ -233,14 +233,9 @@ def _fetch_current_conditions(locations):
         }
     return items
 
-def _fetch_current_conditions(locations):
-    """
-    Mengambil cuaca terkini dari Open-Meteo untuk seluruh
-    titik representatif kecamatan.
 
-    Data cuaca aktual digunakan untuk tampilan dashboard,
-    bukan menggantikan agregat cuaca bulanan model.
-    """
+def _fetch_current_conditions(locations):
+    """Ambil cuaca terkini dari Open-Meteo untuk semua kecamatan."""
     if not locations:
         return {}
 
@@ -252,11 +247,8 @@ def _fetch_current_conditions(locations):
             str(item["longitude"]) for item in locations
         ),
         "current": (
-            "temperature_2m,"
-            "relative_humidity_2m,"
-            "precipitation,"
-            "rain,"
-            "wind_speed_10m"
+            "temperature_2m,relative_humidity_2m,"
+            "precipitation,rain,wind_speed_10m"
         ),
         "timezone": "Asia/Jakarta",
         "wind_speed_unit": "kmh",
@@ -265,26 +257,17 @@ def _fetch_current_conditions(locations):
 
     request = Request(
         f"{CURRENT_WEATHER_URL}?{urlencode(parameters)}",
-        headers={
-            "User-Agent": "LeptoScope/7.0"
-        },
+        headers={"User-Agent": "LeptoScope/7.0"},
     )
 
     with urlopen(request, timeout=15) as response:
-        payload = json.loads(
-            response.read().decode("utf-8")
-        )
+        payload = json.loads(response.read().decode("utf-8"))
 
-    responses = (
-        payload
-        if isinstance(payload, list)
-        else [payload]
-    )
+    responses = payload if isinstance(payload, list) else [payload]
 
     if len(responses) != len(locations):
         raise ValueError(
-            "Jumlah respons cuaca tidak sesuai "
-            "dengan jumlah kecamatan."
+            "Jumlah respons cuaca tidak sesuai jumlah kecamatan."
         )
 
     items = {}
@@ -297,12 +280,10 @@ def _fetch_current_conditions(locations):
             observed_at = datetime.fromisoformat(
                 str(observed_at).replace("Z", "+00:00")
             )
-
             if observed_at.tzinfo is None:
                 observed_at = observed_at.replace(
                     tzinfo=JAKARTA_TZ
                 )
-
             observed_at = observed_at.astimezone(
                 JAKARTA_TZ
             ).isoformat()
@@ -334,23 +315,15 @@ def _fetch_current_conditions(locations):
 
 def _fetch_weather(locations, now, input_month):
     """
-    Mengambil agregat cuaca untuk tiga bulan kalender
-    lengkap sebagai input model.
-
-    Cuaca terkini diambil secara terpisah agar tidak
-    mengubah definisi fitur historis model.
+    Ambil tiga bulan cuaca historis untuk model.
+    Pengamatan terkini diambil secara terpisah.
     """
     if not locations:
-        raise ValueError(
-            "Lokasi kecamatan tidak tersedia."
-        )
+        raise ValueError("Lokasi kecamatan tidak tersedia.")
 
     input_start = pd.Timestamp(
-        input_month.year,
-        input_month.month,
-        1,
+        input_month.year, input_month.month, 1
     )
-
     start_date = input_start - pd.DateOffset(months=2)
     end_date = input_start + pd.offsets.MonthEnd(0)
 
@@ -373,39 +346,25 @@ def _fetch_weather(locations, now, input_month):
 
     request = Request(
         f"{WEATHER_URL}?{urlencode(parameters)}",
-        headers={
-            "User-Agent": "LeptoScope/7.0"
-        },
+        headers={"User-Agent": "LeptoScope/7.0"},
     )
 
     with urlopen(request, timeout=20) as response:
-        payload = json.loads(
-            response.read().decode("utf-8")
-        )
+        payload = json.loads(response.read().decode("utf-8"))
 
-    responses = (
-        payload
-        if isinstance(payload, list)
-        else [payload]
-    )
+    responses = payload if isinstance(payload, list) else [payload]
 
     if len(responses) != len(locations):
         raise ValueError(
-            "Jumlah respons cuaca bulanan "
-            "tidak sesuai jumlah kecamatan."
+            "Jumlah respons cuaca bulanan tidak sesuai."
         )
 
-    # Cuaca aktual bersifat opsional.
-    # Gagal mengambil data terkini tidak boleh
-    # menggagalkan seluruh prediksi bulanan.
-
+    # Kegagalan cuaca terkini tidak menggagalkan model bulanan.
     current_items = {}
     current_error = None
 
     try:
-        current_items = _fetch_current_conditions(
-            locations
-        )
+        current_items = _fetch_current_conditions(locations)
     except Exception as error:
         current_error = str(error)[:240]
 
@@ -427,24 +386,20 @@ def _fetch_weather(locations, now, input_month):
             or normalize_name(location["name"])
         )
 
-        summary.update(
-            {
-                "current_time": None,
-                "current_temperature_c": None,
-                "current_humidity_pct": None,
-                "current_precipitation_mm": None,
-                "current_rain_mm": None,
-                "current_wind_speed_kmh": None,
-                "latitude": weather.get(
-                    "latitude",
-                    location["latitude"],
-                ),
-                "longitude": weather.get(
-                    "longitude",
-                    location["longitude"],
-                ),
-            }
-        )
+        summary.update({
+            "current_time": None,
+            "current_temperature_c": None,
+            "current_humidity_pct": None,
+            "current_precipitation_mm": None,
+            "current_rain_mm": None,
+            "current_wind_speed_kmh": None,
+            "latitude": weather.get(
+                "latitude", location["latitude"]
+            ),
+            "longitude": weather.get(
+                "longitude", location["longitude"]
+            ),
+        })
 
         if key in current_items:
             summary.update(current_items[key])
@@ -459,77 +414,120 @@ def _fetch_weather(locations, now, input_month):
     return {
         "fetched_at": now.isoformat(),
         "source": (
-            "Open-Meteo: cuaca terkini dan "
-            "agregat bulan kalender lengkap"
+            "Open-Meteo: cuaca terkini dan agregat bulanan"
         ),
-        "model_input_month": input_start.strftime(
-            "%Y-%m"
-        ),
+        "model_input_month": input_start.strftime("%Y-%m"),
         "current_status": (
             "live" if has_current else "unavailable"
         ),
         "current_error": current_error,
         "items": items,
     }
-    
 
-def load_weather(base_geojson, live_dir, force_refresh=False, now=None, input_month=None):
+
+def load_weather(
+    base_geojson,
+    live_dir,
+    force_refresh=False,
+    now=None,
+    input_month=None,
+):
+    """
+    Memuat data cuaca dari cache atau API.
+
+    Jika API gagal, data cache dipakai bila tersedia.
+    Jika tidak tersedia, model menggunakan baseline historis.
+    """
     now = now or datetime.now(JAKARTA_TZ)
-    input_month = input_month or (pd.Timestamp(now.year, now.month, 1) - pd.DateOffset(months=1)).to_pydatetime()
-    expected_input_month = pd.Timestamp(input_month.year, input_month.month, 1).strftime("%Y-%m")
+
+    if input_month is None:
+        input_month = (
+            pd.Timestamp(now.year, now.month, 1)
+            - pd.DateOffset(months=1)
+        ).to_pydatetime()
+
+    expected_input_month = pd.Timestamp(
+        input_month.year,
+        input_month.month,
+        1,
+    ).strftime("%Y-%m")
+
     cache_path = Path(live_dir) / "weather_cache.json"
     locations = _district_locations(base_geojson)
     cached = _read_json(cache_path)
 
-    if cached and cached.get("model_input_month") == expected_input_month and cached.get("current_status") and not force_refresh and _cache_is_fresh(cached, now):
+    cache_valid = (
+        cached is not None
+        and cached.get("model_input_month") == expected_input_month
+        and bool(cached.get("current_status"))
+        and _cache_is_fresh(cached, now)
+    )
+
+    if cache_valid and not force_refresh:
         return cached.get("items", {}), {
-            "source": cached.get("source", "Open-Meteo Historical Forecast API"),
+            "source": cached.get(
+                "source", "Open-Meteo"
+            ),
             "status": "cache_fresh",
             "fetched_at": cached.get("fetched_at"),
-            "current_status": cached.get("current_status", "unknown"),
+            "current_status": cached.get(
+                "current_status", "unknown"
+            ),
             "current_error": cached.get("current_error"),
             "error": None,
         }
 
     try:
-        
-fresh = _fetch_weather(locations, now, input_month)
+        fresh = _fetch_weather(
+            locations,
+            now,
+            input_month,
+        )
 
-try:
-    _write_json(cache_path, fresh)
-except OSError:
-    # Penyimpanan cache dapat dibatasi di Vercel.
-    # Data yang berhasil diambil tetap dapat digunakan.
-    pass
+        # Penyimpanan cache tidak boleh menggagalkan
+        # respons apabila Vercel membatasi akses tulis.
+        try:
+            _write_json(cache_path, fresh)
+        except OSError:
+            pass
 
-return fresh["items"], {
-
+        return fresh["items"], {
             "source": fresh["source"],
             "status": "live",
             "fetched_at": fresh["fetched_at"],
-            "current_status": fresh.get("current_status", "unknown"),
+            "current_status": fresh.get(
+                "current_status", "unknown"
+            ),
             "current_error": fresh.get("current_error"),
             "error": None,
         }
-    except Exception as error:  # network failures must not take down the map
+
+    except Exception as error:
+        error_message = str(error)[:240]
+
         if cached and cached.get("items"):
             return cached["items"], {
-                "source": cached.get("source", "Open-Meteo Historical Forecast API"),
+                "source": cached.get(
+                    "source", "Open-Meteo"
+                ),
                 "status": "cache_stale",
                 "fetched_at": cached.get("fetched_at"),
-                "current_status": cached.get("current_status", "unknown"),
+                "current_status": cached.get(
+                    "current_status", "unknown"
+                ),
                 "current_error": cached.get("current_error"),
-                "error": str(error)[:240],
+                "error": error_message,
             }
+
         return {}, {
             "source": "Baseline cuaca historis 2023",
             "status": "historical_fallback",
             "fetched_at": None,
             "current_status": "unavailable",
-            "current_error": str(error)[:240],
-            "error": str(error)[:240],
+            "current_error": error_message,
+            "error": error_message,
         }
-
+        
 
 def _case_columns(frame):
     aliases = {
