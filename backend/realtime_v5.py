@@ -327,6 +327,8 @@ except Exception:
     for location, weather in zip(locations, responses):
         daily = weather.get("daily") or {}
         summary = _calendar_month_summary(
+        key = location["code"] or normalize_name(location["name"])
+        current_data = current_by_location.get(key) or {}
             daily.get("time") or [],
             daily.get("precipitation_sum") or [],
             daily.get("relative_humidity_2m_mean") or [],
@@ -334,18 +336,20 @@ except Exception:
             input_month,
         )
         key = location["code"] or normalize_name(location["name"])
+        
         summary.update(
             {
-                "current_time": None,
-                "current_temperature_c": None,
-                "current_humidity_pct": None,
-                "current_precipitation_mm": None,
-                "current_rain_mm": None,
-                "current_wind_speed_kmh": None,
+                "current_time": current_data.get("current_time"),
+                "current_temperature_c": current_data.get("current_temperature_c"),
+                "current_humidity_pct": current_data.get("current_humidity_pct"),
+                "current_precipitation_mm": current_data.get("current_precipitation_mm"),
+                "current_rain_mm": current_data.get("current_rain_mm"),
+                "current_wind_speed_kmh": current_data.get("current_wind_speed_kmh"),
                 "latitude": weather.get("latitude", location["latitude"]),
                 "longitude": weather.get("longitude", location["longitude"]),
             }
         )
+
         if key in current_items:
             summary.update(current_items[key])
         items[key] = summary
