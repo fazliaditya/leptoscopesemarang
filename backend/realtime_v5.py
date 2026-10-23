@@ -319,7 +319,10 @@ def _fetch_weather(locations, now, input_month):
         current_items = _fetch_current_conditions(locations)
     except Exception as error:
         current_error = str(error)[:240]
-
+try:
+    current_by_location = _fetch_current_conditions(locations)
+except Exception:
+    current_by_location = {}
     items = {}
     for location, weather in zip(locations, responses):
         daily = weather.get("daily") or {}
