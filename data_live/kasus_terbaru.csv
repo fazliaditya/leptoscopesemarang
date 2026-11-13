@@ -1,4 +1,4 @@
-tanggal,kecamatan_code,kecamatan_name,case_count,status_periode
+﻿tanggal,kecamatan_code,kecamatan_name,case_count,status_periode
 2026-06-01,33.74.01,Semarang Tengah,1,Bulan lengkap - input model
 2026-06-01,33.74.02,Semarang Utara,1,Bulan lengkap - input model
 2026-06-01,33.74.03,Semarang Timur,1,Bulan lengkap - input model
@@ -75,7 +75,7 @@ tanggal,kecamatan_code,kecamatan_name,case_count,status_periode
 2026-10-01,33.74.10,Tembalang,1,Bulan berjalan - monitoring sementara
 2026-10-01,33.74.11,Banyumanik,0,Bulan berjalan - monitoring sementara
 2026-10-01,33.74.12,Gunungpati,0,Bulan berjalan - monitoring sementara
-2026-10-01,33.74.13,Semarang Barat,,Bulan berjalan - monitoring sementara
-2026-10-01,33.74.14,Mijen,,Bulan berjalan - monitoring sementara
-2026-10-01,33.74.15,Ngaliyan,,Bulan berjalan - monitoring sementara
-2026-10-01,33.74.1
+2026-10-01,33.74.13,Semarang Barat,1,Bulan berjalan - monitoring sementara
+2026-10-01,33.74.14,Mijen,2,Bulan berjalan - monitoring sementara
+2026-10-01,33.74.15,Ngaliyan,0,Bulan berjalan - monitoring sementara
+2026-10-01,33.74.16,Tugu,0Bulan berjalan - monitoring sementara
